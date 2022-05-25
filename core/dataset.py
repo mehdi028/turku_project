@@ -50,6 +50,7 @@ class Dataset(object):
                 for line in txt:
                     image_path = line.strip()
                     root, _ = os.path.splitext(image_path)
+                    root = "./data/custom_vid/" + root
                     with open(root + ".txt") as fd:
                         boxes = fd.readlines()
                         string = ""
@@ -139,7 +140,7 @@ class Dataset(object):
                     index = self.batch_count * self.batch_size + num
                     if index >= self.num_samples:
                         index -= self.num_samples
-                    annotation = self.annotations[index]
+                    annotation = "./data/custom_vid/" + self.annotations[index]
                     image, bboxes = self.parse_annotation(annotation)
                     (
                         label_sbbox,
