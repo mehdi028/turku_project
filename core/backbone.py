@@ -51,7 +51,7 @@ def cspdarknet53(input_data):
     route = input_data
     route = common.convolutional(route, (1, 1, 1024, 512), activate_type="mish")
     input_data = common.convolutional(input_data, (1, 1, 1024, 512), activate_type="mish")
-    for i in range(2):
+    for i in range(4):
         input_data = common.residual_block(input_data, 512, 512, 512, activate_type="mish")
     input_data = common.convolutional(input_data, (1, 1, 512, 512), activate_type="mish")
     input_data = tf.concat([input_data, route], axis=-1)
