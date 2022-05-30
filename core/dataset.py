@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 # coding=utf-8
+from absl.flags import FLAGS
+from absl import app, flags, logging
 
 import os
 import cv2
@@ -13,9 +15,9 @@ from core.config import cfg
 class Dataset(object):
     """implement Dataset here"""
 
-    def __init__(self, FLAGS, is_training: bool, dataset_type: str = "converted_coco"):
-        self.tiny = FLAGS.tiny
-        self.strides, self.anchors, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
+    def __init__(self, is_training: bool, dataset_type: str = "converted_coco"):
+        self.tiny = False
+        self.strides, self.anchors, NUM_CLASS, XYSCALE = utils.load_config()
         self.dataset_type = dataset_type
 
         self.annot_path = (
@@ -48,27 +50,28 @@ class Dataset(object):
             elif self.dataset_type == "yolo":
                 annotations = []
                 for line in txt:
-                    image_path = line.strip()
-                    root, _ = os.path.splitext(image_path)
-                    with open(root + ".txt") as fd:
-                        boxes = fd.readlines()
-                        string = ""
-                        for box in boxes:
-                            box = box.strip()
-                            box = box.split()
-                            class_num = int(box[0])
-                            center_x = float(box[1])
-                            center_y = float(box[2])
-                            half_width = float(box[3]) / 2
-                            half_height = float(box[4]) / 2
-                            string += " {},{},{},{},{}".format(
-                                center_x - half_width,
-                                center_y - half_height,
-                                center_x + half_width,
-                                center_y + half_height,
-                                class_num,
-                            )
-                        annotations.append(image_path + string)
+                    if line != "\n":
+                        image_path = line.strip()
+                        root, _ = os.path.splitext(image_path)
+                        with open(root + ".txt") as fd:
+                            boxes = fd.readlines()
+                            string = ""
+                            for box in boxes:
+                                box = box.strip()
+                                box = box.split()
+                                class_num = int(box[0])
+                                center_x = float(box[1])
+                                center_y = float(box[2])
+                                half_width = float(box[3]) / 2
+                                half_height = float(box[4]) / 2
+                                string += " {},{},{},{},{}".format(
+                                    center_x - half_width,
+                                    center_y - half_height,
+                                    center_x + half_width,
+                                    center_y + half_height,
+                                    class_num,
+                                )
+                            annotations.append(image_path + string)
 
         np.random.shuffle(annotations)
         return annotations
@@ -376,3 +379,19 @@ class Dataset(object):
 
     def __len__(self):
         return self.num_batchs
+
+# flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
+# flags.DEFINE_string('model', 'yolov4', 'yolov4, yolov3')
+# flags.DEFINE_string('weights', './scripts/yolov4.weights', 'pretrained weights')
+# def main(argv):
+#     train_dataset = Dataset( is_training=True, dataset_type="yolo")
+#     for line in train_dataset.annotations:
+#         print(line)
+#     pass
+if __name__ == "__main__":
+    #
+    train_dataset = Dataset(is_training=False, dataset_type="yolo")
+    for line in train_dataset.annotations:
+        print(line)
+
+
